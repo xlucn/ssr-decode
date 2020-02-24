@@ -1,0 +1,111 @@
+#!/bin/sh
+# A POSIX shell script (it passes shellcheck) to
+#   parse Shadowsocks(R) subscription link and generate .json config files
+# Required commands: POSIX shell commands, curl or wget, base64
+
+if [ "$#" = 0 ]; then
+    read -r url
+elif [ "$#" = 1 ] && [ "$1" != "-h" ]; then
+    url="$1"
+else
+    echo "Usage: $(basename "$0") link"
+    echo "       $(basename "$0") < link.txt"
+    echo
+    echo "Supported format for <link>:"
+    echo "    http(s):// subscription link, or downloaded content therein"
+    echo "    ss(r):// shadowsocks(r) encoded config"
+fi
+
+ss_local_port=1080
+ssr_local_port=1080
+timeout=300
+
+decode()
+{   # accept pipe data
+    rep=$(tr - + | tr _ /)
+    case "$((${#rep} % 4))" in
+        2) rep="$rep==" ;;
+        3) rep="$rep=" ;;
+        *) ;;
+    esac
+    echo "$rep" | base64 -d 2> /dev/null
+}
+
+decode_protocol_link()
+{
+    link="$1"
+    info="$(echo "${link#*://}" | decode)"
+    case "${link%%:*}" in
+        ss)
+            OLDIFS=$IFS IFS=:@
+            # shellcheck disable=SC2086
+            set ${info%%/?*}
+            IFS=$OLDIFS
+            method=$1
+            password=$(echo "$2" | decode)
+            server=$3
+            server_port=$4
+
+            cat > "ss-$server-$server_port.json" << EOF
+{
+    "server": "$server",
+    "server_port": $server_port,
+    "password": "$password",
+    "local_address": "127.0.0.1",
+    "local_port": $ss_local_port,
+    "timeout": $timeout,
+    "method": "$method",
+}
+EOF
+            ;;
+        ssr)
+            OLDIFS=$IFS IFS=:
+            # shellcheck disable=SC2086
+            set ${info%%/?*}
+            IFS=$OLDIFS
+            server=$1
+            server_port=$2
+            protocol=$3
+            method=$4
+            obfs=$5
+            password=$(echo "$6" | decode)
+            OLDIFS=$IFS IFS=\&
+            # shellcheck disable=SC2086
+            set ${info#*/?}
+            IFS=$OLDIFS
+            for i; do
+                eval "${i%=*}=\"$(echo "${i#*=}" | decode | tr / _)\""
+            done
+
+            cat > "ssr-${group-NoGroup}-${remarks-Null}.json" << EOF
+{
+    "server": "$server",
+    "server_port": $server_port,
+    "password": "$password",
+    "local_address": "127.0.0.1",
+    "local_port": $ssr_local_port,
+    "timeout": $timeout,
+    "method": "$method",
+    "protocol": "$protocol",
+    "protocol_param": "${protoparam-null}",
+    "obfs": "$obfs",
+    "obfs_param": "${obfsparam-null}"
+}
+EOF
+            ;;
+        http|https)
+            # wget -q -O - "$url"
+            for l in $(curl -Ss "$link" | decode); do
+                decode_protocol_link "$l"
+            done
+            ;;
+        *)
+            # support downloaded content of subscription link
+            for possible_link in $info; do
+                decode_protocol_link "$possible_link"
+            done
+            ;;
+    esac
+}
+
+decode_protocol_link "$url"
