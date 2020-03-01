@@ -3,19 +3,6 @@
 #   parse Shadowsocks(R) subscription link and generate .json config files
 # Required commands: POSIX shell commands, curl or wget, base64
 
-if [ "$#" = 0 ]; then
-    read -r url
-elif [ "$#" = 1 ] && [ "$1" != "-h" ]; then
-    url="$1"
-else
-    echo "Usage: $(basename "$0") link"
-    echo "       $(basename "$0") < link.txt"
-    echo
-    echo "Supported format for <link>:"
-    echo "    http(s):// subscription link, or downloaded content therein"
-    echo "    ss(r):// shadowsocks(r) encoded config"
-fi
-
 ss_local_port=1080
 ssr_local_port=1080
 timeout=300
@@ -93,6 +80,17 @@ EOF
 }
 EOF
             ;;
+        vmess)
+            ps=$(echo "$info" |
+                awk -F\" '{ for (i = 0; i < NF; i++)
+                                if ($i == "ps")
+                                    print $(i + 2) }')
+            echo "$info" | \
+                sed -e "s/{/{\n\t/g" \
+                    -e "s/,/,\n\t/g" \
+                    -e "s/}/\n}\n/g" \
+                > "v2ray-$ps.json"
+            ;;
         http|https)
             # wget -q -O - "$url"
             for l in $(curl -Ss "$link" | decode); do
@@ -108,4 +106,18 @@ EOF
     esac
 }
 
-decode_protocol_link "$url"
+if [ "$#" = 0 ]; then
+    while read -r url; do
+        decode_protocol_link "$url"
+    done
+elif [ "$#" = 1 ] && [ "$1" != "-h" ]; then
+    decode_protocol_link "$1"
+else
+    echo "Usage: $(basename "$0") link"
+    echo "       $(basename "$0") < link.txt"
+    echo
+    echo "Supported format for <link>:"
+    echo "    http(s):// subscription link, or downloaded content therein"
+    echo "    ss(r):// shadowsocks(r) encoded config"
+    echo "    vmess:// v2ray encoded config"
+fi
