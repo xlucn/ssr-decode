@@ -33,7 +33,9 @@ decode_protocol_link()
             server=$3
             server_port=$4
 
-            cat > "ss-$server-$server_port.json" << EOF
+            config_file="ss-$server-$server_port.json"
+            echo "Saving to \"$config_file\""
+            cat > "$config_file" << EOF
 {
     "server": "$server",
     "server_port": $server_port,
@@ -64,7 +66,9 @@ EOF
                 eval "${i%=*}=\"$(echo "${i#*=}" | decode | tr / _)\""
             done
 
-            cat > "ssr-${group-NoGroup}-${remarks-Null}.json" << EOF
+            config_file="ssr-${group-NoGroup}-${remarks-Null}.json"
+            echo "Saving to \"$config_file\""
+            cat > "$config_file" << EOF
 {
     "server": "$server",
     "server_port": $server_port,
@@ -85,11 +89,13 @@ EOF
                 awk -F\" '{ for (i = 0; i < NF; i++)
                                 if ($i == "ps")
                                     print $(i + 2) }')
+            config_file="v2ray-$ps.json"
+            echo "Saving to \"$config_file\""
             echo "$info" | \
                 sed -e "s/{/{\n\t/g" \
                     -e "s/,/,\n\t/g" \
                     -e "s/}/\n}\n/g" \
-                > "v2ray-$ps.json"
+                > "$config_file"
             ;;
         http|https)
             # wget -q -O - "$url"
