@@ -24,22 +24,16 @@ decode_protocol_link()
     info="$(echo "${link#*://}" | decode)"
     case "${link%%:*}" in
         ss)
-            OLDIFS=$IFS IFS=:@
-            # shellcheck disable=SC2086
-            set ${info%%/?*}
-            IFS=$OLDIFS
-            method=$1
-            password=$(echo "$2" | decode)
-            server=$3
-            server_port=$4
-
             config_file="ss-$server-$server_port.json"
+            IFS=:@\  read -r method password server server_port << EOF
+                ${info%%/?*}
+EOF
             echo "Saving to \"$config_file\""
             cat > "$config_file" << EOF
 {
     "server": "$server",
     "server_port": $server_port,
-    "password": "$password",
+    "password": "$(echo "$password" | decode)",
     "local_address": "127.0.0.1",
     "local_port": $ss_local_port,
     "timeout": $timeout,
@@ -48,23 +42,14 @@ decode_protocol_link()
 EOF
             ;;
         ssr)
-            OLDIFS=$IFS IFS=:
-            # shellcheck disable=SC2086
-            set ${info%%/?*}
-            IFS=$OLDIFS
-            server=$1
-            server_port=$2
-            protocol=$3
-            method=$4
-            obfs=$5
-            password=$(echo "$6" | decode)
-            OLDIFS=$IFS IFS=\&
-            # shellcheck disable=SC2086
-            set ${info#*/?}
-            IFS=$OLDIFS
-            for i; do
-                eval "${i%=*}=\"$(echo "${i#*=}" | decode | tr / _)\""
-            done
+            IFS=:\  read -r server server_port protocol method obfs password << EOF
+                ${info%%/?*}
+EOF
+            while read -r i; do
+                eval "${i%=*}=\"$(echo "${i#*=}" | decode)\""
+            done << EOF
+                $(echo "${info#*/?}" | sed "s/&/\n/g")
+EOF
 
             config_file="ssr-${group-NoGroup}-${remarks-Null}.json"
             echo "Saving to \"$config_file\""
@@ -72,7 +57,7 @@ EOF
 {
     "server": "$server",
     "server_port": $server_port,
-    "password": "$password",
+    "password": "$(echo "$password" | decode)",
     "local_address": "127.0.0.1",
     "local_port": $ssr_local_port,
     "timeout": $timeout,
