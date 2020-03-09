@@ -24,10 +24,10 @@ decode_protocol_link()
     info="$(echo "${link#*://}" | decode)"
     case "${link%%:*}" in
         ss)
-            config_file="ss-$server-$server_port.json"
             IFS=:@\  read -r method password server server_port << EOF
                 ${info%%/?*}
 EOF
+            config_file="$(echo "ss-${server:-NoServer}-${server_port:-NoPort}.json" | tr / _)"
             echo "Saving to \"$config_file\""
             cat > "$config_file" << EOF
 {
@@ -51,7 +51,7 @@ EOF
                 $(echo "${info#*/?}" | sed "s/&/\n/g")
 EOF
 
-            config_file="ssr-${group-NoGroup}-${remarks-Null}.json"
+            config_file="$(echo "ssr-${group:-NoGroup}-${remarks:-Null}.json" | tr / _)"
             echo "Saving to \"$config_file\""
             cat > "$config_file" << EOF
 {
@@ -63,18 +63,19 @@ EOF
     "timeout": $timeout,
     "method": "$method",
     "protocol": "$protocol",
-    "protocol_param": "${protoparam-null}",
+    "protocol_param": "${protoparam:-null}",
     "obfs": "$obfs",
-    "obfs_param": "${obfsparam-null}"
+    "obfs_param": "${obfsparam:-null}"
 }
 EOF
             ;;
         vmess)
-            ps=$(echo "$info" |
-                awk -F\" '{ for (i = 0; i < NF; i++)
-                                if ($i == "ps")
-                                    print $(i + 2) }')
-            config_file="v2ray-$ps.json"
+            add_ps=$(echo "$info" | awk -F\" '{
+                for (i = 0; i < NF; i++)
+                    if ($i == "ps" || $i == "add")
+                        printf("-%s", $(i + 2))
+                }')
+            config_file="$(echo "v2ray$add_ps.json" | tr / _)"
             echo "Saving to \"$config_file\""
             echo "$info" | \
                 sed -e "s/{/{\n\t/g" \
