@@ -2,6 +2,10 @@
 
 A POSIX compatible shell script to decode and parse Shadowsocks/ShadowsocksR/V2Ray subscription link.
 
+## Requirement:
+
+POSIX compatible shell, sed, curl or wget, base64
+
 ## Usage
 
 The script accepts input as one CLI argument or multiple from pipe. The argument can be:

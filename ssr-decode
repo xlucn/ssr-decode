@@ -1,7 +1,7 @@
 #!/bin/sh
 # A POSIX shell script (it passes shellcheck) to
 #   parse Shadowsocks(R) subscription link and generate .json config files
-# Required commands: POSIX shell commands, curl or wget, base64
+# Required commands: POSIX shell commands, sed, curl or wget, base64
 
 ss_local_port=1080
 ssr_local_port=1080
@@ -70,12 +70,9 @@ EOF
 EOF
             ;;
         vmess)
-            add_ps=$(echo "$info" | awk -F\" '{
-                for (i = 0; i < NF; i++)
-                    if ($i == "ps" || $i == "add")
-                        printf("-%s", $(i + 2))
-                }')
-            config_file="$(echo "v2ray$add_ps.json" | tr / _)"
+            ps=$(echo "$info" | sed "s/.*\"ps\":\"\([^\"]*\)\".*/\1/")
+            add=$(echo "$info" | sed "s/.*\"add\":\"\([^\"]*\)\".*/\1/")
+            config_file="$(echo "v2ray-$add-$ps.json" | tr / _)"
             echo "Saving to \"$config_file\""
             echo "$info" | \
                 sed -e "s/{/{\n\t/g" \
