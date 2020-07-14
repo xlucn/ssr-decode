@@ -1,7 +1,9 @@
 #!/bin/sh
-# A POSIX shell script (it passes shellcheck) to
-#   parse Shadowsocks(R) subscription link and generate .json config files
-# Required commands: POSIX shell commands, sed, curl or wget, base64
+#
+# A POSIX shell script, which also passes shellcheck to
+# parse Shadowsocks(R) subscription link and generate .json config files
+#
+# Requirements: POSIX shell, sed, curl, base64
 
 ss_local_port=1080
 ssr_local_port=1080
@@ -27,7 +29,8 @@ decode_protocol_link()
             IFS=:@\  read -r method password server server_port << EOF
                 ${info%%/?*}
 EOF
-            config_file="$(echo "ss-${server:-NoServer}-${server_port:-NoPort}.json" | tr / _)"
+            config_file="ss-${server:-NoServer}-${server_port:-NoPort}.json"
+            config_file="$(echo "$config_file" | tr / _)"
             echo "Saving to \"$config_file\""
             cat > "$config_file" << EOF
 {
@@ -51,7 +54,8 @@ EOF
                 $(echo "${info#*/?}" | sed "s/&/\n/g")
 EOF
 
-            config_file="$(echo "ssr-${group:-NoGroup}-${remarks:-Null}.json" | tr / _)"
+            config_file="ssr-${group:-NoGroup}-${remarks:-Null}.json"
+            config_file="$(echo "$config_file" | tr / _)"
             echo "Saving to \"$config_file\""
             cat > "$config_file" << EOF
 {
