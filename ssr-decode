@@ -48,10 +48,11 @@ EOF
             IFS=:\  read -r server server_port protocol method obfs password << EOF
                 ${info%%/?*}
 EOF
+
             while read -r i; do
                 eval "${i%=*}=\"$(echo "${i#*=}" | decode)\""
             done << EOF
-                $(echo "${info#*/?}" | sed "s/&/\n/g")
+                $(echo "${info#*/?}" | tr '&' '\n')
 EOF
 
             config_file="ssr-${group:-NoGroup}-${remarks:-Null}.json"
