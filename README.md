@@ -4,7 +4,8 @@ A POSIX compatible shell script to decode and parse Shadowsocks/ShadowsocksR/V2R
 
 ## Requirement:
 
-POSIX compatible shell, `sed`, `curl` or `wget`, `base64`
+- `curl` or `wget` to download a link
+- `base64` to decode base64 format data
 
 ## Usage
 

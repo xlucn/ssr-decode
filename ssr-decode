@@ -3,7 +3,7 @@
 # A POSIX shell script, which also passes shellcheck to
 # parse Shadowsocks(R) subscription link and generate .json config files
 #
-# Requirements: POSIX shell, sed, curl, base64
+# Requirements: curl/wget, base64
 
 ss_local_port=1080
 ssr_local_port=1080
@@ -49,8 +49,8 @@ EOF
                 ${info%%/?*}
 EOF
 
-            while read -r i; do
-                eval "${i%=*}=\"$(echo "${i#*=}" | decode)\""
+            while IFS='=' read -r key value; do
+                [ -n "$value" ] && eval "$key=$(echo "$value" | decode)"
             done << EOF
                 $(echo "${info#*/?}" | tr '&' '\n')
 EOF
@@ -75,15 +75,14 @@ EOF
 EOF
             ;;
         vmess)
-            ps=$(echo "$info" | sed "s/.*\"ps\":\"\([^\"]*\)\".*/\1/")
-            add=$(echo "$info" | sed "s/.*\"add\":\"\([^\"]*\)\".*/\1/")
-            config_file="$(echo "v2ray-$add-$ps.json" | tr / _)"
+            while IFS=: read -r key value; do
+                [ -n "$value" ] && eval "$key=\"$value\""
+            done << EOF
+                $(echo "$info" | tr '{,}' '\n' | tr -d '"')
+EOF
+            config_file="$(echo "v2ray-${add-null}-${ps-null}.json" | tr / _)"
             echo "Saving to \"$config_file\""
-            echo "$info" | \
-                sed -e "s/{/{\n\t/g" \
-                    -e "s/,/,\n\t/g" \
-                    -e "s/}/\n}\n/g" \
-                > "$config_file"
+            echo "$info" > "$config_file"
             ;;
         http|https)
             # wget -q -O - "$url"
