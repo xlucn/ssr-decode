@@ -85,8 +85,7 @@ EOF
             echo "$info" > "$config_file"
             ;;
         http|https)
-            # wget -q -O - "$url"
-            for l in $(curl -Ss "$link" | decode); do
+            for l in $(curl -Ss "$link" || wget -qO - "$link" | decode); do
                 decode_protocol_link "$l"
             done
             ;;
