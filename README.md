@@ -1,6 +1,6 @@
 # Shadowsocks(R)/V2Ray subscription decoder/parser
 
-A POSIX compatible shell script to decode and parse Shadowsocks/ShadowsocksR/V2Ray subscription link.
+A POSIX compatible shell script to decode and parse Shadowsocks(R)/V2Ray subscription link.
 
 ## Requirement:
 
@@ -10,8 +10,8 @@ A POSIX compatible shell script to decode and parse Shadowsocks/ShadowsocksR/V2R
 ## Usage
 
 The script accepts either one CLI argument or multiple from pipe. The arguments can be:
-- `http(s)://` protocol subscription link which normally contains multiple configs
-- A single `ss://` or `ssr://` or `vmess://` protocol link which is a single config
+- `http(s)://` protocol subscription link which normally contains multiple configurations
+- A single `ss://` or `ssr://` or `vmess://` protocol link which is a single configuration
 - The downloaded content of subscription link (base64 encoded)
 
 ```sh
