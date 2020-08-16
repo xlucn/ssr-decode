@@ -18,6 +18,14 @@ The script accepts either one CLI argument or multiple from pipe. The arguments 
 ssr-decode [ (http|https)://link | (ss|ssr|vmess)://BASE64 | BASE64 | < input.txt ]
 ```
 
+### Customization
+
+The `local_port` and `timeout` in the shadowsocks settings can be controlled with environment variables by `LOCAL_PORT` and `TIMEOUT`, the default is 1080 for local port and 300 for timeout
+
+```sh
+LOCAL_PORT=1234 TIMEOUT=600 ssr-decode
+```
+
 ## Output
 
 The script will generate `*.json` configuration files for each Shadowsocks(R)/V2Ray setup.

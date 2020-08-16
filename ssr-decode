@@ -5,9 +5,8 @@
 #
 # Requirements: curl/wget, base64
 
-ss_local_port=1080
-ssr_local_port=1080
-timeout=300
+local_port=${LOCAL_PORT:-1080}
+timeout=${TIMEOUT:-300}
 
 decode()
 {   # accept pipe data
@@ -38,7 +37,7 @@ EOF
     "server_port": $server_port,
     "password": "$(echo "$password" | decode)",
     "local_address": "127.0.0.1",
-    "local_port": $ss_local_port,
+    "local_port": $local_port,
     "timeout": $timeout,
     "method": "$method",
 }
@@ -64,7 +63,7 @@ EOF
     "server_port": $server_port,
     "password": "$(echo "$password" | decode)",
     "local_address": "127.0.0.1",
-    "local_port": $ssr_local_port,
+    "local_port": $local_port,
     "timeout": $timeout,
     "method": "$method",
     "protocol": "$protocol",
