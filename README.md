@@ -4,7 +4,7 @@ A POSIX compatible shell script to decode and parse Shadowsocks(R)/V2Ray subscri
 
 ## Requirement:
 
-- `curl` or `wget` to download a link
+- `curl` or `wget` to download a link, optional if a base64 encoded link is provided
 - `base64` to decode base64 format data
 
 ## Usage
