@@ -9,19 +9,16 @@ local_port=${LOCAL_PORT:-1080}
 timeout=${TIMEOUT:-300}
 
 decode() {
-	# accept pipe data
-	rep=$(tr - + | tr _ /)
-	case "$((${#rep} % 4))" in
-		2) rep="$rep==" ;;
-		3) rep="$rep=" ;;
-		*) ;;
-	esac
-	echo "$rep" | base64 -d 2> /dev/null
+	case "$((${#1} % 4))" in
+		2) echo "$1==" ;;
+		3) echo "$1=" ;;
+		*) echo "$1" ;;
+	esac | tr '_-' '/+' | grep -o "^[a-zA-Z0-9+/=]*" | base64 -d
 }
 
 decode_protocol_link() {
 	link="$1"
-	info="$(echo "${link#*://}" | decode)"
+	info="$(decode "${link#*://}")"
 	case "${link%%:*}" in
 	ss)
 		IFS=:@\  read -r method password server server_port <<- EOF
@@ -34,7 +31,7 @@ decode_protocol_link() {
 		{
 			"server": "$server",
 			"server_port": $server_port,
-			"password": "$(echo "$password" | decode)",
+			"password": "$password",
 			"local_address": "127.0.0.1",
 			"local_port": $local_port,
 			"timeout": $timeout,
@@ -48,7 +45,7 @@ decode_protocol_link() {
 		EOF
 
 		while IFS='=' read -r key value; do
-			[ -n "$value" ] && eval "$key=$(echo "$value" | decode)"
+			[ -n "$value" ] && eval "$key=$(decode "$value")"
 		done <<- EOF
 			$(echo "${info#*/?}" | tr '&' '\n')
 		EOF
@@ -60,7 +57,7 @@ decode_protocol_link() {
 		{
 			"server": "$server",
 			"server_port": $server_port,
-			"password": "$(echo "$password" | decode)",
+			"password": "$(decode "$password")",
 			"local_address": "127.0.0.1",
 			"local_port": $local_port,
 			"timeout": $timeout,
@@ -83,7 +80,8 @@ decode_protocol_link() {
 		echo "$info" > "$config_file"
 		;;
 	http|https)
-		for l in $(curl -Ss "$link" || wget -qO - "$link" | decode); do
+		data=$(curl -Ss "$link" || wget -qO - "$link")
+		for l in $(decode "$data"); do
 			decode_protocol_link "$l"
 		done
 		;;
