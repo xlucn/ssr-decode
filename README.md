@@ -2,6 +2,8 @@
 
 A POSIX compatible shell script to decode and parse Shadowsocks(R)/V2Ray subscription link.
 
+**Disclaimer:** This is a toy project. I don't know the standard of those link URL, so some parsing could quite possibly go wrong.
+
 ## Requirement:
 
 - `curl` or `wget` to download a link, optional if a base64 encoded link is provided
