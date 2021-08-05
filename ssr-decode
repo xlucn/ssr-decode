@@ -32,13 +32,13 @@ decode_protocol_link() {
 		echo "Saving to \"$config_file\""
 		cat > "$config_file" <<- EOF
 		{
-			"server": "$server",
-			"server_port": $server_port,
-			"password": "$password",
-			"local_address": "127.0.0.1",
-			"local_port": $local_port,
-			"timeout": $timeout,
-			"method": "$method",
+		    "server": "$server",
+		    "server_port": $server_port,
+		    "password": "$password",
+		    "local_address": "127.0.0.1",
+		    "local_port": $local_port,
+		    "timeout": $timeout,
+		    "method": "$method",
 		}
 		EOF
 		;;
@@ -58,17 +58,17 @@ decode_protocol_link() {
 		echo "Saving to \"$config_file\""
 		cat > "$config_file" <<- EOF
 		{
-			"server": "$server",
-			"server_port": $server_port,
-			"password": "$(decode "$password")",
-			"local_address": "127.0.0.1",
-			"local_port": $local_port,
-			"timeout": $timeout,
-			"method": "$method",
-			"protocol": "$protocol",
-			"protocol_param": "${protoparam:-null}",
-			"obfs": "$obfs",
-			"obfs_param": "${obfsparam:-null}"
+		    "server": "$server",
+		    "server_port": $server_port,
+		    "password": "$(decode "$password")",
+		    "local_address": "127.0.0.1",
+		    "local_port": $local_port,
+		    "timeout": $timeout,
+		    "method": "$method",
+		    "protocol": "$protocol",
+		    "protocol_param": "${protoparam:-null}",
+		    "obfs": "$obfs",
+		    "obfs_param": "${obfsparam:-null}"
 		}
 		EOF
 		;;
