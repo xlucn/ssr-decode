@@ -80,10 +80,7 @@ decode_protocol_link() {
 		echo "$info" > "$config_file"
 		;;
 	http|https)
-		data=$(curl -Ss "$link" || wget -qO - "$link")
-		for l in $(decode "$data"); do
-			decode_protocol_link "$l"
-		done
+		decode_protocol_link "$(curl -Ss "$link" || wget -qO - "$link")"
 		;;
 	*)
 		# support downloaded content of subscription link
