@@ -1,9 +1,12 @@
 #!/bin/sh
 #
-# A shell script to parse Shadowsocks(R)/v2ray subscription links
-# and generate .json config files
+# Author: Lu Xu <oliver_lew at outlook at com>
+# License: MIT License. 2020-2021 Lu Xu
 #
-# Requirements: curl/wget, base64
+# A shell script to parse Shadowsocks(R)/v2ray subscription links
+# and generate json config files
+#
+# Requirements: base64, curl/wget (optional)
 
 local_port=${LOCAL_PORT:-1080}
 timeout=${TIMEOUT:-300}
