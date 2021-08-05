@@ -20,9 +20,8 @@ decode() {
 }
 
 decode_protocol_link() {
-	link="$1"
-	info="$(decode "${link#*://}")"
-	case "${link%%:*}" in
+	info="$(decode "${1#*://}")"
+	case "${1%%:*}" in
 	ss)
 		IFS=:@\  read -r method password server server_port <<- EOF
 			${info%%/?*}
@@ -83,7 +82,7 @@ decode_protocol_link() {
 		echo "$info" > "$config_file"
 		;;
 	http|https)
-		decode_protocol_link "$(curl -Ss "$link" || wget -qO - "$link")"
+		decode_protocol_link "$(curl -Ss "$1" || wget -qO - "$1")"
 		;;
 	*)
 		# support downloaded content of subscription link
