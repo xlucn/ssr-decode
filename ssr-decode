@@ -90,14 +90,16 @@ decode_link() {
 	esac
 }
 
-if [ "$#" = 0 ]; then
-	while read -r url; do
-		decode_link "$url"
+if [ "$#" = 1 ] && [ "$1" = "-h" ]; then
+	echo "Usage: ssr-decode [ (http|https|ss|ssr|vmess):// | BASE64 | < input.txt ]"
+elif [ "$#" = 0 ]; then
+	while read -r link; do
+		decode_link "$link"
 	done
-elif [ "$#" = 1 ] && [ "$1" != "-h" ]; then
-	decode_link "$1"
 else
-	echo "Usage: ssr-decode [ (http|ss|ssr|vmess):// | BASE64 | < input.txt ]"
+	for link in "$@"; do
+		decode_link "$link"
+	done
 fi
 
 # vim: noet

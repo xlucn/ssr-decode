@@ -1,23 +1,23 @@
 # Shadowsocks(R)/V2Ray subscription decoder/parser
 
-A POSIX compatible shell script to decode and parse Shadowsocks(R)/V2Ray subscription link.
+A 100-line POSIX compatible shell script to decode, parse Shadowsocks(R)/V2Ray subscription link and create configuration files.
 
-**Disclaimer:** This is a toy project. I don't know the standard of those link URL, so some parsing could quite possibly go wrong.
+**Disclaimer:** This is a toy project. I don't know the standard of the encoding of those link URLs, so some parsing could quite possibly go wrong.
 
 ## Requirement:
 
-- `curl` or `wget` to download a link, optional if a base64 encoded link is provided
 - `base64` to decode base64 format data
+- `curl` or `wget` to download a link, optional if a base64 encoded link is provided
 
 ## Usage
 
-The script accepts either one CLI argument or multiple from pipe. The arguments can be:
-- `http(s)://` protocol subscription link which normally contains multiple configurations
-- A single `ss://` or `ssr://` or `vmess://` protocol link which is a single configuration
-- The downloaded content of subscription link (base64 encoded)
+The script accepts either one CLI argument or multiple from pipe. The arguments can be one or more of:
+- A single `ss://` or `ssr://` or `vmess://` link. This contains a single configuration.
+- A `http(s)://` subscription link. This normally contains multiple configurations.
+- A base64 encoded string downloaded from a `http(s)` subscription link.
 
-```sh
-ssr-decode [ (http|https)://link | (ss|ssr|vmess)://BASE64 | BASE64 | < input.txt ]
+```
+ssr-decode [ http(s)://link | ss(r)://BASE64 | vmess://BASE64 | BASE64 | < input.txt ]
 ```
 
 ### Customization
