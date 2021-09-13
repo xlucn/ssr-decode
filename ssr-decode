@@ -11,7 +11,7 @@
 local_port=${LOCAL_PORT:-1080}
 timeout=${TIMEOUT:-300}
 
-decode() {
+decode_base64() {
 	case "$((${#1} % 4))" in
 		2) echo "$1==" ;;
 		3) echo "$1=" ;;
@@ -19,86 +19,83 @@ decode() {
 	esac | tr '_-' '/+' | grep -o "^[a-zA-Z0-9+/=]*" | base64 -d
 }
 
-decode_protocol_link() {
-	info="$(decode "${1#*://}")"
+decode_ss() {
+	IFS=:@\  read -r method password server server_port <<- EOF
+		${1%%/?*}
+	EOF
+	conf=$(echo "ss-${server:-NoServer}-${server_port:-NoPort}.json" | tr "/ " _)
+	echo "Saving to $conf"
+	cat > "$conf" <<- EOF
+	{
+	    "server": "$server",
+	    "server_port": $server_port,
+	    "password": "$password",
+	    "local_address": "127.0.0.1",
+	    "local_port": $local_port,
+	    "timeout": $timeout,
+	    "method": "$method",
+	}
+	EOF
+}
+
+decode_ssr() {
+	IFS=:\  read -r server server_port protocol method obfs password <<- EOF
+		${1%%/?*}
+	EOF
+
+	while IFS='=' read -r key value; do
+		[ -n "$value" ] && eval "$key=$(decode_base64 "$value")"
+	done <<- EOF
+		$(echo "${1#*/?}" | tr '&' '\n')
+	EOF
+
+	conf=$(echo "ssr-${group:-NoGroup}-${remarks:-Null}.json" | tr "/ " _)
+	echo "Saving to $conf"
+	cat > "$conf" <<- EOF
+	{
+	    "server": "$server",
+	    "server_port": $server_port,
+	    "password": "$(decode_base64 "$password")",
+	    "local_address": "127.0.0.1",
+	    "local_port": $local_port,
+	    "timeout": $timeout,
+	    "method": "$method",
+	    "protocol": "$protocol",
+	    "protocol_param": "${protoparam:-null}",
+	    "obfs": "$obfs",
+	    "obfs_param": "${obfsparam:-null}"
+	}
+	EOF
+}
+
+decode_vmess() {
+	while IFS=': ' read -r key value; do
+		[ -n "$value" ] && eval "$key=\"$value\""
+	done <<- EOF
+		$(echo "$1" | tr '{,}' '\n' | tr -d '"')
+	EOF
+	conf=$(echo "v2ray-${add-null}-${ps-null}.json" | tr "/ " _)
+	echo "Saving to $conf"
+	echo "$1" > "$conf"
+}
+
+decode_link() {
+	info=$(decode_base64 "${1#*://}")
 	case "${1%%:*}" in
-	ss)
-		IFS=:@\  read -r method password server server_port <<- EOF
-			${info%%/?*}
-		EOF
-		config_file="ss-${server:-NoServer}-${server_port:-NoPort}.json"
-		config_file="$(echo "$config_file" | tr / _)"
-		echo "Saving to \"$config_file\""
-		cat > "$config_file" <<- EOF
-		{
-		    "server": "$server",
-		    "server_port": $server_port,
-		    "password": "$password",
-		    "local_address": "127.0.0.1",
-		    "local_port": $local_port,
-		    "timeout": $timeout,
-		    "method": "$method",
-		}
-		EOF
-		;;
-	ssr)
-		IFS=:\  read -r server server_port protocol method obfs password <<- EOF
-			${info%%/?*}
-		EOF
-
-		while IFS='=' read -r key value; do
-			[ -n "$value" ] && eval "$key=$(decode "$value")"
-		done <<- EOF
-			$(echo "${info#*/?}" | tr '&' '\n')
-		EOF
-
-		config_file="ssr-${group:-NoGroup}-${remarks:-Null}.json"
-		config_file="$(echo "$config_file" | tr / _)"
-		echo "Saving to \"$config_file\""
-		cat > "$config_file" <<- EOF
-		{
-		    "server": "$server",
-		    "server_port": $server_port,
-		    "password": "$(decode "$password")",
-		    "local_address": "127.0.0.1",
-		    "local_port": $local_port,
-		    "timeout": $timeout,
-		    "method": "$method",
-		    "protocol": "$protocol",
-		    "protocol_param": "${protoparam:-null}",
-		    "obfs": "$obfs",
-		    "obfs_param": "${obfsparam:-null}"
-		}
-		EOF
-		;;
-	vmess)
-		while IFS=: read -r key value; do
-			[ -n "$value" ] && eval "$key=\"$value\""
-		done <<- EOF
-			$(echo "$info" | tr '{,}' '\n' | tr -d '"')
-		EOF
-		config_file="$(echo "v2ray-${add-null}-${ps-null}.json" | tr / _)"
-		echo "Saving to \"$config_file\""
-		echo "$info" > "$config_file"
-		;;
-	http|https)
-		decode_protocol_link "$(curl -Ss "$1" || wget -qO - "$1")"
-		;;
-	*)
-		# support downloaded content of subscription link
-		for possible_link in $info; do
-			decode_protocol_link "$possible_link"
-		done
-		;;
+		ss)     decode_ss "$info" ;;
+		ssr)    decode_ssr "$info" ;;
+		vmess)  decode_vmess "$info" ;;
+		https?) decode_link "$(curl -Ss "$1" || wget -qO - "$1")" ;;
+		*)      for link in $info; do decode_link "$link"; done ;;
 	esac
 }
 
 if [ "$#" = 0 ]; then
 	while read -r url; do
-		decode_protocol_link "$url"
+		decode_link "$url"
 	done
 elif [ "$#" = 1 ] && [ "$1" != "-h" ]; then
-	decode_protocol_link "$1"
+	decode_link "$1"
 else
 	echo "Usage: ssr-decode [ (http|ss|ssr|vmess):// | BASE64 | < input.txt ]"
 fi
