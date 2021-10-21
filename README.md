@@ -20,6 +20,10 @@ The script accepts one or more links as CLI arguments or from pipe. The links ca
 ssr-decode [ http(s)://link | ss(r)://BASE64 | vmess://BASE64 | BASE64 | < input.txt ]
 ```
 
+### Issues
+
+Some links encode the strings in other encodings other than UTF-8, the script will still decode with UTF-8. So, expect some non-sense garbles if you run into some of them.
+
 ### Customization
 
 The `local_port` and `timeout` in the shadowsocks settings can be controlled with environment variables by `LOCAL_PORT` and `TIMEOUT`, the default is 1080 for local port and 300 for timeout
