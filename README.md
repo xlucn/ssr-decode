@@ -7,14 +7,14 @@ A 100-line POSIX compatible shell script to decode, parse Shadowsocks(R)/V2Ray s
 ## Requirement:
 
 - `base64` to decode base64 format data
-- `curl` or `wget` to download a link, optional if a base64 encoded link is provided
+- `curl` or `wget` to download http links (optional)
 
 ## Usage
 
-The script accepts either one CLI argument or multiple from pipe. The arguments can be one or more of:
+The script accepts one or more links as CLI arguments or from pipe. The links can be one of the formats:
 - A single `ss://` or `ssr://` or `vmess://` link. This contains a single configuration.
 - A `http(s)://` subscription link. This normally contains multiple configurations.
-- A base64 encoded string downloaded from a `http(s)` subscription link.
+- A base64 encoded string downloaded from a subscription link.
 
 ```
 ssr-decode [ http(s)://link | ss(r)://BASE64 | vmess://BASE64 | BASE64 | < input.txt ]
