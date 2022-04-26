@@ -44,7 +44,7 @@ decode_ssr() {
 	EOF
 
 	while IFS='=' read -r key value; do
-		[ -n "$value" ] && eval "$key=$(decode_base64 "$value")"
+		[ -n "$value" ] && eval "$key=\"$(decode_base64 "$value")\""
 	done <<- EOF
 		$(echo "${1#*/?}" | tr '&' '\n')
 	EOF
